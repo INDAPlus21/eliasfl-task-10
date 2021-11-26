@@ -14,6 +14,8 @@ read_file(Filename, Symbol) :-
 % Example query: `alive(4, 6, 'alive_example.txt').`
 alive(Row, Column, BoardFileName) :-
     read_file(BoardFileName, Board),
+    nth1_2d(Row, Column, Board, Stone),
+    (Stone = b; Stone = w),
     check_alive(Row, Column, Board, []).
 
 same_color(Row, Col, Row_, Col_, Board) :-
@@ -32,14 +34,16 @@ neighbour(Row, Col, Row_, Col_) :-
     Row = Row_,
     (Col_ is Col + 1; Col_ is Col - 1)).
 
+% Neighbours with Color
+neighbours(Row, Col, Row_, Col_, Board, Color) :-
+    neighbour(Row, Col, Row_, Col_),
+    nth1_2d(Row_, Col_, Board, Color).
+
 % Checks whether the group of stones connected to
 % the stone located at (Row, Column) is alive or dead.
 check_alive(Row, Column, Board, Visited) :-
-    \+ member((Row, Column), Visited), % if its not visited yet
-    neighbour(Row, Column, Row_, Column_), % get its neighbour(s)
-    % Row_ and Column_ is now the neighbour
-    % Return true if (any) neighbour is empty
-    is_empty(Row_, Column_, Board);
-    % else recurse and check if neighbour of same color is alive
-    (same_color(Row, Column, Row_, Column_, Board),
-    check_alive(Row_, Column_, Board, [(Row, Column)|Visited])). % check alive for neighbour of same color
+    \+ member([Row, Column], Visited),
+    nth1_2d(Row, Column, Board, Stone),
+    ((\+ (Stone = w; Stone = b));
+    (neighbours(Row, Column, Row_, Col_, Board, Stone_), Stone_ = Stone,
+    check_alive(Row_, Col_, Board, [[Row, Column]|Visited]))). % check alive for neighbour of same color
