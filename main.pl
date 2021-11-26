@@ -11,47 +11,35 @@ read_file(Filename, Symbol) :-
     seen.                   % Closes the io-stream'
 
 % Top-level predicate
-% alive(Row, Column, BoardFileName) :-
-%     read_file(BoardFileName, Board).
-%     % check_ive(Row, Column, Board).
-
-% Checks whether the group of stones connected to
-% the stone located at (Row, Column) is alive or dead.
-% check_alive(Row, Column, Board) :-
-%     \+ is_occupied(Row, Column, Board), !;
-%     neighbour(Row, Column, Row_, Column_),
-%     same_color(Row, Column, Row_, Column_, Board),
-%     check_alive(Row_, Column_, Board).
-
+% Example query: `alive(4, 6, 'alive_example.txt').`
+alive(Row, Column, BoardFileName) :-
+    read_file(BoardFileName, Board),
+    check_alive(Row, Column, Board, []).
 
 same_color(Row, Col, Row_, Col_, Board) :-
     nth1_2d(Row, Col, Board, Piece),
     nth1_2d(Row_, Col_, Board, Piece_),
     Piece = Piece_.
 
-% cell_alive(Row, Col, Board) :-
-%     neighbours(Row, Col, Board, Cell),
-%     Cell = e, !.
-
-is_occupied(Row, Column, Board) :-
+is_empty(Row, Column, Board) :-
     nth1_2d(Row, Column, Board, Stone),
-    (Stone = b; Stone = w).
+    \+ (Stone = b; Stone = w).
 
-% neighbour(Row, Col, Row1, Col1, B) :-
-%     neighbour(Row, Col, Row_, Col_, B),
-%     neighbour(Row_, Col_, Row1, Col1, B).
-neighbour(Row, Col, Row1, Col1, Board) :-
-    (Col = Col1,
-    (Row1 is Row + 1; Row1 is Row - 1);
-    Row = Row1,
-    (Col1 is Col + 1; Col1 is Col - 1)),
-    same_color(Row, Col, Row1, Col1, Board).
+% Assign Row_, Col_ to neighbours of Row, Col
+neighbour(Row, Col, Row_, Col_) :-
+    (Col = Col_,
+    (Row_ is Row + 1; Row_ is Row - 1);
+    Row = Row_,
+    (Col_ is Col + 1; Col_ is Col - 1)).
 
-% Check if group is alive
+% Checks whether the group of stones connected to
+% the stone located at (Row, Column) is alive or dead.
 check_alive(Row, Column, Board, Visited) :-
-    \+ member((Row, Column), Visited),
-    is_occupied(Row, Column, Board).
-
-% neighbours(Row, Col, Row_, Col_, Board, Neighbour) :-
-%     neighbour(Row, Col, Row1, Col1, Board),
-%     nth1_2d(Row1, Col1, Board, Neighbour).
+    \+ member((Row, Column), Visited), % if its not visited yet
+    neighbour(Row, Column, Row_, Column_), % get its neighbour(s)
+    % Row_ and Column_ is now the neighbour
+    % Return true if (any) neighbour is empty
+    is_empty(Row_, Column_, Board);
+    % else recurse and check if neighbour of same color is alive
+    (same_color(Row, Column, Row_, Column_, Board),
+    check_alive(Row_, Column_, Board, [(Row, Column)|Visited])). % check alive for neighbour of same color
