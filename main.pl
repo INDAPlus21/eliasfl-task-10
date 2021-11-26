@@ -41,9 +41,16 @@ neighbours(Row, Col, Row_, Col_, Board, Color) :-
 
 % Checks whether the group of stones connected to
 % the stone located at (Row, Column) is alive or dead.
-check_alive(Row, Column, Board, Visited) :-
-    \+ member([Row, Column], Visited),
-    nth1_2d(Row, Column, Board, Stone),
-    ((\+ (Stone = w; Stone = b));
-    (neighbours(Row, Column, Row_, Col_, Board, Stone_), Stone_ = Stone,
-    check_alive(Row_, Col_, Board, [[Row, Column]|Visited]))). % check alive for neighbour of same color
+check_alive(Row, Column, Board, Stone, Visited) :-
+    \+ member((Row, Column), Visited),
+    nth1_2d(Row, Column, Board, Stone_),
+    (Stone_ = e;
+    Stone = Stone_,
+    Down is Row + 1,
+    Up is Row - 1,
+    Right is Column + 1,
+    Left is Column - 1,
+    (check_alive(Down, Column, Board, Stone, [(Row, Column)|Visited]);
+    check_alive(Up, Column, Board, Stone, [(Row, Column)|Visited]);
+    check_alive(Row, Left, Board, Stone, [(Row, Column)|Visited]);
+    check_alive(Row, Right, Board, Stone, [(Row, Column)|Visited]))).
