@@ -16,7 +16,7 @@ alive(Row, Column, BoardFileName) :-
     read_file(BoardFileName, Board),
     nth1_2d(Row, Column, Board, Stone),
     (Stone = b; Stone = w),
-    check_alive(Row, Column, Board, []).
+    once(check_alive(Row, Column, Board, Stone, [])).
 
 same_color(Row, Col, Row_, Col_, Board) :-
     nth1_2d(Row, Col, Board, Piece),
