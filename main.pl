@@ -16,10 +16,11 @@ alive(Row, Column, BoardFileName) :-
     read_file(BoardFileName, Board),
     nth1_2d(Row, Column, Board, Stone),
     (Stone = b; Stone = w),
-    once(check_alive(Row, Column, Board, Stone, [])).
+    check_alive(Row, Column, Board, Stone, []), !.
 
 % Checks whether the group of stones connected to
 % the stone located at (Row, Column) is alive or dead.
+% some inspiration from azeez
 check_alive(Row, Column, Board, Stone, Visited) :-
     \+ member((Row, Column), Visited),
     nth1_2d(Row, Column, Board, Stone_),
